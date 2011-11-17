@@ -5,6 +5,7 @@
 #include "SDL/SDL_keyboard.h"
 #include "SDL/SDL_events.h"
 #include "SDL/SDL_image.h"
+#include "SDL/SDL_ttf.h"
 #include <sys/time.h>
 
 using namespace std;
@@ -41,9 +42,45 @@ using namespace std;
 
 #define GET_MAX(a , b) { (a > b) ? a : b }
 
-#define tuk {printf("%d\n", __LINE__);fflush(stdout);}
+#define ERROR(er) {printf("\nERROR :: %s :: Line %d :: %s \n", __FUNCTION__ ,__LINE__, er);fflush(stdout);}
 
 #define AVOID 0
+
+#define FONT_SIZE 21
+
+
+///=======================================
+///     Enums
+///=======================================
+typedef enum {
+  SP,
+  MP,
+  AI,
+  EX
+}GM;
+
+typedef enum {
+  NoneOfThem,
+  Pepeliashka,
+  BigBadSister
+}Snakes;
+
+///=======================================
+///         Globals
+///=======================================
+static int len;
+static int len2;
+static SDL_Rect body[MAX_LEN];
+static SDL_Rect body2[MAX_LEN];
+static GM Game_mode;
+static bool game_paused;
+static unsigned long timeNew, timeOld;
+static SDL_Surface *screen;
+static SDL_Color tColor = {0,150,0};
+static TTF_Font *font;
+
+
+
 
 ///=======================================
 ///        Classes and Structures
@@ -77,51 +114,55 @@ private:
         Uint8 keyState[400];
 };
 
-///=======================================
-///     Enums
-///=======================================
-typedef enum {
-  SP,
-  MP,
-  AI,
-  EX
-}GM;
+class MenuItem {
+  public:
+  MenuItem(const char * txt){
+  this->text = txt;
+  }
+  SDL_Surface* printText(){
+    return TTF_RenderText_Solid(font, text, tColor);
+  }
 
-typedef enum {
-  NoneOfThem,
-  Pepeliashka,
-  BigBadSister
-}Snakes;
+  private:
+  const char* text;
+};
+
 
 ///=======================================
 ///     Function prototypes
 ///=======================================
 
+int init();
 void run();
 void run_sp();
 void run_ai();
 GM main_menu();
 Snakes gotCrash();
 
-///=======================================
-///         Globals
-///=======================================
-static int len;
-static int len2;
-static SDL_Rect body[MAX_LEN];
-static SDL_Rect body2[MAX_LEN];
-static GM Game_mode;
-static bool game_paused;
-static unsigned long timeNew, timeOld;
-static SDL_Surface *screen;
+
 
 int main(int argc, char **argv) {
     srand(time(NULL));
-    int ret = SDL_Init(SDL_INIT_VIDEO);
+    int ret = init();
+
+    /*SDL_Init(SDL_INIT_VIDEO);
 
     screen = SDL_SetVideoMode(PLAYUGROUND_WIDTH, PLAYUGROUND_HEIGHT, 8, SDL_DOUBLEBUF | SDL_ANYFORMAT );
+
+    if ( -1 == TTF_Init())
+    {
+        ERROR("SDL_TTF failed to init");
+        return 1;
+    }
+
+    if ( NULL == (font = TTF_OpenFont("Purisa.ttf", FONT_SIZE)))
+    {
+      ERROR("Error Loading text");
+      return EX;
+    }*/
+  
     
-    Game_mode = AI; // main_menu(); 
+    Game_mode = main_menu();
     
     if( !ret )
     {
@@ -892,7 +933,7 @@ Snakes gotCrash()
 
 GM main_menu()
 {
-  SDL_Surface *tmp, *cur, *menu;
+  SDL_Surface *tmp, *cur, *menu, *txt;
   SDL_Rect rMenu, rCur;
   SDL_Event event;
   int cStep;
@@ -924,6 +965,23 @@ GM main_menu()
   KeyboardHandler keyHandler;
  
   cStep = rMenu.h/4; - HEAD_SIZE;
+
+
+  
+
+  /*if (!(txt = TTF_RenderText_Solid(font, "{Single Player}", tColor)))
+  {
+    ERROR("Error Rendering text");
+    return EX;
+  }*/
+
+  MenuItem **mItems;
+
+  mItems = new MenuItem*[4];
+  mItems[0] = new MenuItem("{Single Player}");
+  mItems[1] = new MenuItem("{Multy Player}");
+  mItems[2] = new MenuItem("{Player VS AI}");
+  mItems[3] = new MenuItem("{Exit}");
   
   while(1)
   {
@@ -955,8 +1013,9 @@ GM main_menu()
     if( timeNew - timeOld > FRAME_PERIOD_ms)
     {
     SDL_FillRect( screen, NULL, 0);
-    SDL_BlitSurface( menu, NULL, screen, &rMenu);
+    //SDL_BlitSurface( menu, NULL, screen, &rMenu);
     SDL_BlitSurface( cur, NULL, screen, &rCur);
+    SDL_BlitSurface( txt, NULL, screen, &rMenu);
     SDL_Flip(screen);
     }
   }
@@ -964,4 +1023,37 @@ GM main_menu()
   SDL_FreeSurface(screen);
   SDL_FreeSurface(menu);
   SDL_FreeSurface(cur);
+  SDL_FreeSurface(txt);
+}
+
+///  Init everything and return != 0 if error
+int init()
+{
+  int ret = 0;
+
+  if ( ret = SDL_Init(SDL_INIT_VIDEO))
+  {
+      ERROR("SDL failed to init");
+      return ret;
+  }
+
+  if ( NULL == (screen = SDL_SetVideoMode(PLAYUGROUND_WIDTH, PLAYUGROUND_HEIGHT, 8, SDL_DOUBLEBUF | SDL_ANYFORMAT ))){
+      ERROR("SDL failed to set the video mode");
+      return -1;
+  }
+
+  if ( !(ret == TTF_Init()))
+  {
+      ERROR("SDL_TTF failed to init");
+      return ret;
+  }
+
+  if ( NULL == (font = TTF_OpenFont("Purisa.ttf", FONT_SIZE)))
+  {
+    ERROR("Error Loading text");
+    return -1;
+  }
+  
+  
+  return ret;
 }
