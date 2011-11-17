@@ -9,7 +9,7 @@
 
 using namespace std;
 
-#define GROWTH 1
+#define GROWTH 5
 
 #define FRAME_PERIOD_ms 90000
 
@@ -266,13 +266,13 @@ void run()
             {
               case Pepeliashka:
               {
-                  len = MIN_LEN;
+//                   len = MIN_LEN;
 //                   go = false;
                   break;
               }
               case BigBadSister:
               {
-                  len2 = MIN_LEN;
+//                   len2 = MIN_LEN;
 //                   go = false;
                   break;
               }
@@ -550,8 +550,6 @@ void run_sp()
     SDL_FreeSurface( head  );
 }
 
-
-
 Snakes gotCrash()
 {
     /// Check if first worm is out of the playground
@@ -561,13 +559,17 @@ Snakes gotCrash()
     if( body[HEAD].y + HEAD_SIZE > PLAYUGROUND_HEIGHT || body[HEAD].y < 0 )
         return Pepeliashka;
 
-    if (Game_mode > SP){
+    
+    if (Game_mode != SP){
       /// Check if first worm is has bitten itself or is bitten by the other worm
       for(int i = HEAD + 1; i < len; i++)
       {
-            if ( ( body[HEAD].x == body[i].x &&  body[HEAD].y == body[i].y ) ||
-                  ( body2[HEAD].x == body[i].x && body2[HEAD].y == body[i].y) )
-              return BigBadSister;
+            if  ( body[HEAD].x == body[i].x &&  body[HEAD].y == body[i].y )
+              return Pepeliashka;
+            if  ( body2[HEAD].x == body[i].x && body2[HEAD].y == body[i].y){
+              len = i;
+              return Pepeliashka;
+                  }
       }
     }else{
       for(int i = HEAD + 1; i < len; i++)
@@ -576,7 +578,7 @@ Snakes gotCrash()
               return Pepeliashka;
       }
     }
-    if (Game_mode > SP){ /// if second worm exists
+    if (Game_mode != SP){ /// if second worm exists
       /// Check if second worm is out of the playground
       if( body2[HEAD].x + HEAD_SIZE > PLAYUGROUND_WIDTH || body2[HEAD].x < 0 )
           return BigBadSister;
@@ -587,9 +589,12 @@ Snakes gotCrash()
       /// Check if second worm is has bitten itself or is bitten by the other worm
       for(int i = HEAD + 1; i < len2; i++)
       {
-          if( ( body2[HEAD].x == body2[i].x &&  body2[HEAD].y == body2[i].y ) ||
-              (body[HEAD].x == body2[i].x && body[HEAD].x == body2[i].y) )
+          if ( body2[HEAD].x == body2[i].x &&  body2[HEAD].y == body2[i].y )
             return BigBadSister;
+          if (body[HEAD].x == body2[i].x && body[HEAD].x == body2[i].y){
+            len2=i;
+            return BigBadSister;
+          }
       }
     }
 
