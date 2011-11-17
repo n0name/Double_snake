@@ -44,6 +44,22 @@ using namespace std;
 
 #define ERROR(er) {printf("\nERROR :: %s :: Line %d :: %s \n", __FUNCTION__ ,__LINE__, er);fflush(stdout);}
 
+#define tuk {printf("%d\n", __LINE__);fflush(stdout);}
+#define tuk_bk {while(1)tuk}
+/*
+    check if ptr has a native type type's sizeof
+    => ptr is most probably nativa or pointer
+    then check for address
+*/
+#define print_ptr(ptr)                          \
+{                                               \
+  printf("At line %d, ptr = ", __LINE__);       \
+  if(sizeof(ptr) == sizeof(int))                \
+    if(&ptr)printf("%p\n", &ptr);               \
+      else printf("NULL ptr\n");                \
+  fflush(stdout);                               \
+}
+
 #define AVOID 0
 
 #define FONT_SIZE 21
@@ -56,7 +72,9 @@ typedef enum {
   SP,
   MP,
   AI,
-  EX
+  EX,
+
+  GM_MAX
 }GM;
 
 typedef enum {
@@ -77,9 +95,8 @@ static bool game_paused;
 static unsigned long timeNew, timeOld;
 static SDL_Surface *screen;
 static SDL_Color tColor = {0,150,0};
+static SDL_Color tColorActive = {150,0,150};
 static TTF_Font *font;
-
-
 
 
 ///=======================================
@@ -116,15 +133,29 @@ private:
 
 class MenuItem {
   public:
-  MenuItem(const char * txt){
-  this->text = txt;
+  bool active;
+  MenuItem(const char * txt, GM Mode){
+    this->text = txt;
+    this->active = false;
+    this->Mode = Mode;
   }
   SDL_Surface* printText(){
-    return TTF_RenderText_Solid(font, text, tColor);
+    if (!active)
+    {
+      return TTF_RenderText_Solid(font, text, tColor);
+    }
+    else
+    {
+      return TTF_RenderText_Solid(font, text, tColorActive);
+    }
   }
-
+  GM GetMode(){
+    return this->Mode;
+  }
   private:
   const char* text;
+  GM Mode;
+  
 };
 
 
@@ -251,7 +282,7 @@ void run()
     SDL_FreeSurface( tmp );
 
     /// load food
-    tmp = IMG_Load("./rana.gif");
+    tmp = IMG_Load("./apple2.gif");
     food = SDL_DisplayFormat( tmp );
     SDL_FreeSurface( tmp );
 
@@ -479,7 +510,7 @@ void run_sp()
     SDL_FreeSurface( tmp );
 
     /// load food
-    tmp = IMG_Load("./rana.gif");
+    tmp = IMG_Load("./apple2.gif");
     food = SDL_DisplayFormat( tmp );
     SDL_FreeSurface( tmp );
 
@@ -930,58 +961,32 @@ Snakes gotCrash()
 
     return NoneOfThem;
 }
-
+#define MENU_OPTS 4
 GM main_menu()
 {
-  SDL_Surface *tmp, *cur, *menu, *txt;
-  SDL_Rect rMenu, rCur;
+  SDL_Surface *txt[GM_MAX];
+  SDL_Rect rMenu;
   SDL_Event event;
-  int cStep;
-
+  int activeItem;
   /// Get time
   GET_TIME(timeOld);
   
-  /// load cursor
-  tmp = IMG_Load("./glavaaa.gif");
-  cur = SDL_DisplayFormat( tmp );
-  SDL_FreeSurface( tmp );
-  
-  /// load Menu
-  tmp = IMG_Load("./Menu.gif");
-  menu = SDL_DisplayFormat( tmp );
-  SDL_FreeSurface( tmp );
-  
-  rCur.h = cur->h;
-  rCur.w = cur->w;
-  
-  rMenu.h = menu->h;
-  rMenu.w = menu->w;
-  rMenu.x = (PLAYUGROUND_WIDTH / 2) - (rMenu.w /2 );
-  rMenu.h = (PLAYUGROUND_HEIGHT / 2) - (rMenu.h / 2);
- 
-  rCur.x = rMenu.x - (HEAD_SIZE * 2);
-  rCur.y = rMenu.y;
+  rMenu.h = 20;
+  rMenu.w = 100;
+  rMenu.x = (PLAYUGROUND_WIDTH / 2) - rMenu.w ;
+  rMenu.y = (PLAYUGROUND_HEIGHT / 2) - rMenu.h*2 ;
   
   KeyboardHandler keyHandler;
- 
-  cStep = rMenu.h/4; - HEAD_SIZE;
 
+  MenuItem *mItems[GM_MAX];
+//   mItems = new MenuItem*[GM_MAX];
+  mItems[0] = new MenuItem("{ Single Player }", SP);
+  mItems[1] = new MenuItem("{ Multy Player }", MP);
+  mItems[2] = new MenuItem("{ Player VS AI }", AI);
+  mItems[3] = new MenuItem("{ Exit }", EX);
 
-  
-
-  /*if (!(txt = TTF_RenderText_Solid(font, "{Single Player}", tColor)))
-  {
-    ERROR("Error Rendering text");
-    return EX;
-  }*/
-
-  MenuItem **mItems;
-
-  mItems = new MenuItem*[4];
-  mItems[0] = new MenuItem("{Single Player}");
-  mItems[1] = new MenuItem("{Multy Player}");
-  mItems[2] = new MenuItem("{Player VS AI}");
-  mItems[3] = new MenuItem("{Exit}");
+  mItems[0]->active = true;
+  activeItem = 0;
   
   while(1)
   {
@@ -990,17 +995,19 @@ GM main_menu()
       keyHandler.handleKeyboardEvent( event);
     }
     
-    if (keyHandler.isPressed(SDLK_UP) && (rCur.y > rMenu.y))
+    if (keyHandler.isPressed(SDLK_UP) && (activeItem > 0) )
     {
-        rCur.y -= cStep;
-    }else if ( keyHandler.isPressed(SDLK_DOWN) && ((rCur.y + HEAD_SIZE) < (rMenu.y+rMenu.h)) )
+          mItems[activeItem]->active = false;
+          mItems[--activeItem]->active = true;
+    }else if ( keyHandler.isPressed(SDLK_DOWN) && (activeItem < GM_MAX - 1) )
     {
-        rCur.y += cStep;
+          mItems[activeItem]->active = false;
+          mItems[++activeItem]->active = true;
     }
     
     if (keyHandler.isPressed(SDLK_RETURN))
-    {
-        return (GM)((rCur.y - rMenu.y) / cStep); 
+    {   
+        return mItems[activeItem]->GetMode();
     }
     
     if (keyHandler.isPressed(SDLK_ESCAPE))
@@ -1013,17 +1020,22 @@ GM main_menu()
     if( timeNew - timeOld > FRAME_PERIOD_ms)
     {
     SDL_FillRect( screen, NULL, 0);
-    //SDL_BlitSurface( menu, NULL, screen, &rMenu);
-    SDL_BlitSurface( cur, NULL, screen, &rCur);
-    SDL_BlitSurface( txt, NULL, screen, &rMenu);
+
+
+
+    for( int i = 0; i < GM_MAX; i++ )
+    {
+        rMenu.y = ((PLAYUGROUND_HEIGHT / 2) - rMenu.h*2) + (32 * i);
+        txt[i] = mItems[i]->printText() ;
+        SDL_BlitSurface( txt[i], NULL, screen, &rMenu);
+    }
     SDL_Flip(screen);
     }
   }
   
   SDL_FreeSurface(screen);
-  SDL_FreeSurface(menu);
-  SDL_FreeSurface(cur);
-  SDL_FreeSurface(txt);
+  for( int i = 0; i < GM_MAX; i++ )
+  SDL_FreeSurface(txt[i]);
 }
 
 ///  Init everything and return != 0 if error
@@ -1048,7 +1060,7 @@ int init()
       return ret;
   }
 
-  if ( NULL == (font = TTF_OpenFont("Purisa.ttf", FONT_SIZE)))
+  if ( NULL == (font = TTF_OpenFont("./Purisa.ttf", FONT_SIZE)))
   {
     ERROR("Error Loading text");
     return -1;
