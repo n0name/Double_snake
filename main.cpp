@@ -55,16 +55,22 @@ public:
         }
 
         bool isPressed( SDLKey keyCode) {
-                return ( SDL_PRESSED == keyState[keyCode]);
+            if( SDL_PRESSED == keyState[keyCode])
+            {
+                keyState[keyCode] = SDL_RELEASED;
+                return true;
+            }
+            else 
+                return false;
         }
 
         bool isReleased( SDLKey keyCode) {
                 return ( SDL_RELEASED ==  keyState[keyCode] );
         }
 
-        void unsetKey( SDLKey keyCode ){
-            keyState[keyCode] = SDL_RELEASED;
-        }
+//         void unsetKey( SDLKey keyCode ){
+//             keyState[keyCode] = SDL_RELEASED;
+//         }
 private:
         Uint8 keyState[400];
 };
@@ -226,41 +232,33 @@ void run()
         if(keyHandler.isPressed(SDLK_w) && 0 == Ystep  ){              //Up - Down movement of worm
           Ystep = -STEP;
           Xstep = 0;
-          keyHandler.unsetKey(SDLK_w);
         }else if (keyHandler.isPressed(SDLK_s) && 0 == Ystep ){
           Ystep = STEP;
           Xstep = 0;
-          keyHandler.unsetKey(SDLK_s);
         }
 
         if(keyHandler.isPressed(SDLK_a) && 0 == Xstep ){              //Left - Right movement of worm
           Ystep = 0;
           Xstep = -STEP;
-          keyHandler.unsetKey(SDLK_a);
         }else if(keyHandler.isPressed(SDLK_d) && 0 == Xstep ){
           Ystep = 0;
           Xstep = STEP;
-          keyHandler.unsetKey(SDLK_d);
         }
 
         if(keyHandler.isPressed(SDLK_UP) && 0 == Ystep2 ){              //Up - Down movement of second worm
           Ystep2 = -STEP;
           Xstep2 = 0;
-          keyHandler.unsetKey(SDLK_UP);
         }else if (keyHandler.isPressed(SDLK_DOWN) && 0 == Ystep2 ){
           Ystep2 = STEP;
           Xstep2 = 0;
-          keyHandler.unsetKey(SDLK_DOWN);
         }
 
         if(keyHandler.isPressed(SDLK_LEFT) && 0 == Xstep2 ){              //Left - Right movement of second worm
           Ystep2 = 0;
           Xstep2 = -STEP;
-          keyHandler.unsetKey(SDLK_LEFT);
         }else if(keyHandler.isPressed(SDLK_RIGHT) && 0 == Xstep2 ){
           Ystep2 = 0;
           Xstep2 = STEP;
-          keyHandler.unsetKey(SDLK_RIGHT);
         }
 
         if(keyHandler.isPressed(SDLK_ESCAPE) ){         ///Exit
@@ -270,7 +268,6 @@ void run()
         if ( keyHandler.isPressed(SDLK_p) )
         {
             game_paused = !game_paused;
-            keyHandler.unsetKey(SDLK_p);
         }
 
         SDL_Delay(1);
@@ -478,7 +475,6 @@ void run_sp()
         if ( keyHandler.isPressed(SDLK_p) )
         {
             game_paused = !game_paused ;
-            keyHandler.unsetKey(SDLK_p);
         }
 
         SDL_Delay(1);
@@ -628,21 +624,17 @@ void run_ai()
         if(keyHandler.isPressed(SDLK_w) && 0 == Ystep  ){              //Up - Down movement of worm
           Ystep = -STEP;
           Xstep = 0;
-          keyHandler.unsetKey(SDLK_w);
         }else if (keyHandler.isPressed(SDLK_s) && 0 == Ystep ){
           Ystep = STEP;
           Xstep = 0;
-          keyHandler.unsetKey(SDLK_s);
         }
 
         if(keyHandler.isPressed(SDLK_a) && 0 == Xstep ){              //Left - Right movement of worm
           Ystep = 0;
           Xstep = -STEP;
-          keyHandler.unsetKey(SDLK_a);
         }else if(keyHandler.isPressed(SDLK_d) && 0 == Xstep ){
           Ystep = 0;
           Xstep = STEP;
-          keyHandler.unsetKey(SDLK_d);
         }
 
         
@@ -676,7 +668,6 @@ void run_ai()
         if ( keyHandler.isPressed(SDLK_p) )
         {
             game_paused = !game_paused;
-            keyHandler.unsetKey(SDLK_p);
         }
 
         SDL_Delay(1);
