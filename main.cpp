@@ -43,6 +43,8 @@ using namespace std;
 
 #define tuk {printf("%d\n", __LINE__);fflush(stdout);}
 
+#define AVOID 0
+
 ///=======================================
 ///        Classes and Structures
 ///=======================================
@@ -639,24 +641,54 @@ void run_ai()
 
         
         { ///Second snake AI move
-          if ( body2[HEAD].x < foodRect.x )
-          {
-             Ystep2 = 0;
-             Xstep2 = STEP;
-          }else if ( body2[HEAD].x > foodRect.x )
-          {
-             Ystep2 = 0;
-             Xstep2 = -STEP; 
-          }
-          if ( body2[HEAD].y < foodRect.y )
-          {
-             Ystep2 = STEP;
-             Xstep2 = 0;
-          }else if ( body2[HEAD].y > foodRect.y )
-          {
-             Ystep2 = -STEP;
-             Xstep2 = 0;
-          }
+            if ( body2[HEAD].x < foodRect.x )
+            {
+              Ystep2 = 0;
+              Xstep2 = STEP;
+            }else if ( body2[HEAD].x > foodRect.x )
+            {
+              Ystep2 = 0;
+              Xstep2 = -STEP;
+            }
+            if ( body2[HEAD].y < foodRect.y )
+            {
+              Ystep2 = STEP;
+              Xstep2 = 0;
+            }else if ( body2[HEAD].y > foodRect.y )
+            {
+              Ystep2 = -STEP;
+              Xstep2 = 0;
+            }
+            if (AVOID){
+            for (int i = 1; i <= len; i++)
+            {
+              if ( abs( (body2[HEAD].x + (2*Xstep2)) - body[i].x) == 0 )//  STEP)
+              {
+                if ( abs( (body2[HEAD].y + STEP) - body[i].y) == 0 )//  STEP)
+                {
+                  Ystep2 = -STEP;
+                  Xstep2 = 0;
+                }else
+                {
+                  Ystep2 = STEP;
+                  Xstep2 = 0;
+                }
+              }
+              if ( abs( (body2[HEAD].y + (2*Ystep2)) - body[i].y) == 0 )//  STEP)
+              {
+                if ( abs( (body2[HEAD].x + STEP) - body[i].y) == 0 )//  STEP)
+                {
+                  Ystep2 = 0;
+                  Xstep2 = -STEP;
+                }else
+                {
+                  Ystep2 = 0;
+                  Xstep2 = STEP;
+                }
+              }
+
+            }
+           }
         }
 
 
