@@ -30,6 +30,7 @@ using namespace std;
 #define X_START_POS2 ( FIELD_GRID_WIDTH  / 2 ) * HEAD_SIZE + ( 3 * HEAD_SIZE )
 #define Y_START_POS2 ( FIELD_GRID_HEIGHT / 2 ) * HEAD_SIZE + ( 3 * HEAD_SIZE )
 
+#define tuk {printf("%d\n", __LINE__);fflush(stdout);}
 
 ///=======================================
 ///        Classes and Structures
@@ -82,7 +83,7 @@ static GM Game_mode;
 int main(int argc, char **argv) {
     srand(time(NULL));
     int ret = SDL_Init(SDL_INIT_VIDEO);
-    Game_mode = MP;   /// Will be changed from menu later
+    Game_mode = SP;   /// Will be changed from menu later
     if( !ret )
     {
         memset(body , 0 , sizeof(SDL_Rect)*MAX_LEN);
@@ -95,7 +96,6 @@ int main(int argc, char **argv) {
             body[len].y = Y_START_POS;
             body[len].x = X_START_POS - HEAD_SIZE *  len ;
         }
-        
 
         switch(Game_mode){
         case SP:
@@ -359,7 +359,7 @@ void run_sp()
     bckgRect.h = PLAYUGROUND_HEIGHT;
 
     SDL_EnableUNICODE(true);
-
+    
     screen = SDL_SetVideoMode(PLAYUGROUND_WIDTH, PLAYUGROUND_HEIGHT, 8, SDL_DOUBLEBUF | SDL_ANYFORMAT );
     if ( NULL == screen ){
         return;
@@ -376,16 +376,14 @@ void run_sp()
     SDL_FreeSurface( tmp );
 
     KeyboardHandler keyHandler;
-
+    
     while( go )
     {
-        /// @todo export in a new thread
+      /// @todo export in a new thread
         while( SDL_PollEvent( &event ) )
         {
           keyHandler.handleKeyboardEvent( event);
         }
-
-
 
         if(keyHandler.isPressed(SDLK_w) && 0 == Ystep  ){              //Up - Down movement of worm
           Ystep = -STEP;
@@ -439,7 +437,6 @@ void run_sp()
             }
         }
 
-
         /// redraw playground
         SDL_FillRect( screen, NULL, 0);
 
@@ -461,7 +458,10 @@ void run_sp()
                     if( foodRect.x == body[i].x && foodRect.y == body[i].y)
                     {
                         haveFood = false;
+                        
                         break;
+                    }else{
+                      haveFood = true;
                     }
                 }
 
