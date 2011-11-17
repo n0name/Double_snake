@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
 
     screen = SDL_SetVideoMode(PLAYUGROUND_WIDTH, PLAYUGROUND_HEIGHT, 8, SDL_DOUBLEBUF | SDL_ANYFORMAT );
     
-    Game_mode = main_menu(); 
+    Game_mode = AI; // main_menu(); 
     
     if( !ret )
     {
@@ -643,7 +643,7 @@ void run_ai()
           {
              Ystep2 = 0;
              Xstep2 = STEP;
-          }else
+          }else if ( body2[HEAD].x > foodRect.x )
           {
              Ystep2 = 0;
              Xstep2 = -STEP; 
@@ -652,7 +652,7 @@ void run_ai()
           {
              Ystep2 = STEP;
              Xstep2 = 0;
-          }else
+          }else if ( body2[HEAD].y > foodRect.y )
           {
              Ystep2 = -STEP;
              Xstep2 = 0;
