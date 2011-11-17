@@ -173,70 +173,82 @@ Snakes gotCrash();
 
 
 int main(int argc, char **argv) {
-    srand(time(NULL));
+	int running = 1;
+	srand(time(NULL));
     int ret = init();
-
-    /*SDL_Init(SDL_INIT_VIDEO);
-
-    screen = SDL_SetVideoMode(PLAYUGROUND_WIDTH, PLAYUGROUND_HEIGHT, 8, SDL_DOUBLEBUF | SDL_ANYFORMAT );
-
-    if ( -1 == TTF_Init())
-    {
-        ERROR("SDL_TTF failed to init");
-        return 1;
-    }
-
-    if ( NULL == (font = TTF_OpenFont("Purisa.ttf", FONT_SIZE)))
-    {
-      ERROR("Error Loading text");
-      return EX;
-    }*/
-  
     
-    Game_mode = main_menu();
     
+
     if( !ret )
     {
-        memset(body , 0 , sizeof(SDL_Rect)*MAX_LEN);
 
-        /// define the 'initial' snake: head and tail
-        for( len = HEAD ; len < MIN_LEN ; len++ )
-        {
-            body[len].h = body[len].w = HEAD_SIZE;
-            body[len].y = Y_START_POS;
-            body[len].x = X_START_POS - HEAD_SIZE *  len ;
-        }
+    	while (running)
+    	{
+    		Game_mode = main_menu();
 
-        
+			switch(Game_mode)
+			{
+				case SP:
+					// Init Snake 1
+					memset(body , 0 , sizeof(SDL_Rect)*MAX_LEN);
+					for( len = HEAD ; len < MIN_LEN ; len++ )
+					{
+						body[len].h = body[len].w = HEAD_SIZE;
+						body[len].y = Y_START_POS;
+						body[len].x = X_START_POS - HEAD_SIZE *  len ;
+					}
+					run_sp();
+					break;
 
-        switch(Game_mode)
-        {
-            case SP:
-                run_sp();
-                break;
+				case MP:
+					// Init Snake 1
+					memset(body , 0 , sizeof(SDL_Rect)*MAX_LEN);
+					for( len = HEAD ; len < MIN_LEN ; len++ )
+					{
+						body[len].h = body[len].w = HEAD_SIZE;
+						body[len].y = Y_START_POS;
+						body[len].x = X_START_POS - HEAD_SIZE *  len ;
+					}
 
-            case MP:
-                memset(body2 , 0 , sizeof(SDL_Rect)*MAX_LEN);
-                for ( len2 = HEAD; len2 < MIN_LEN ; len2++)
-                {
-                    body2[len2].h = body2[len2].w = HEAD_SIZE;
-                    body2[len2].y = Y_START_POS2;
-                    body2[len2].x = X_START_POS2 - HEAD_SIZE *  len2 ;
-                }
-                run();
-                break;
+					// Init Snake 2
+					memset(body2 , 0 , sizeof(SDL_Rect)*MAX_LEN);
+					for ( len2 = HEAD; len2 < MIN_LEN ; len2++)
+					{
+						body2[len2].h = body2[len2].w = HEAD_SIZE;
+						body2[len2].y = Y_START_POS2;
+						body2[len2].x = X_START_POS2 - HEAD_SIZE *  len2 ;
+					}
+					run();
+					break;
 
-            case AI:
-                /// @todo add AI to second snake...
-                memset(body2 , 0 , sizeof(SDL_Rect)*MAX_LEN);
-                for ( len2 = HEAD; len2 < MIN_LEN ; len2++)
-                {
-                    body2[len2].h = body2[len2].w = HEAD_SIZE;
-                    body2[len2].y = Y_START_POS2;
-                    body2[len2].x = X_START_POS2 - HEAD_SIZE *  len2 ;
-                }
-                run_ai();
-                break;
+				case AI:
+					// Init Snake 1
+					memset(body , 0 , sizeof(SDL_Rect)*MAX_LEN);
+					for( len = HEAD ; len < MIN_LEN ; len++ )
+					{
+						body[len].h = body[len].w = HEAD_SIZE;
+						body[len].y = Y_START_POS;
+						body[len].x = X_START_POS - HEAD_SIZE *  len ;
+					}
+
+					// Init Snake 2
+					memset(body2 , 0 , sizeof(SDL_Rect)*MAX_LEN);
+					for ( len2 = HEAD; len2 < MIN_LEN ; len2++)
+					{
+						body2[len2].h = body2[len2].w = HEAD_SIZE;
+						body2[len2].y = Y_START_POS2;
+						body2[len2].x = X_START_POS2 - HEAD_SIZE *  len2 ;
+					}
+					run_ai();
+					break;
+
+				case EX:
+					running = 0;
+					break;
+
+				default:
+					break;
+			}
         }
     }
 
@@ -248,7 +260,7 @@ void run()
 {
     bool haveFood = false;
     SDL_Event event;
-    SDL_Surface *head, *head2, *food, *bckg, *tmp, *background;
+    SDL_Surface *head, *head2, *food, *tmp, *background;
     SDL_Rect bckgRect, foodRect;
     game_paused = false;
 
@@ -483,7 +495,7 @@ void run_sp()
 {
     bool haveFood = false;
     SDL_Event event;
-    SDL_Surface *head, *food, *bckg, *tmp;
+    SDL_Surface *head, *food, *tmp;
     SDL_Rect bckgRect, foodRect;
     game_paused = false;
 
@@ -640,7 +652,7 @@ void run_ai()
 {
     bool haveFood = false;
     SDL_Event event;
-    SDL_Surface *head, *head2, *food, *bckg, *tmp, *background;
+    SDL_Surface *head, *head2, *food, *tmp, *background;
     SDL_Rect bckgRect, foodRect;
     game_paused = false;
 
@@ -1043,24 +1055,25 @@ int init()
 {
   int ret = 0;
 
-  if ( ret = SDL_Init(SDL_INIT_VIDEO))
+  ret = SDL_Init(SDL_INIT_VIDEO);
+  if ( ret )
   {
       ERROR("SDL failed to init");
       return ret;
   }
-
-  if ( NULL == (screen = SDL_SetVideoMode(PLAYUGROUND_WIDTH, PLAYUGROUND_HEIGHT, 8, SDL_DOUBLEBUF | SDL_ANYFORMAT ))){
+  screen = SDL_SetVideoMode(PLAYUGROUND_WIDTH, PLAYUGROUND_HEIGHT, 8, SDL_DOUBLEBUF | SDL_ANYFORMAT );
+  if ( !screen ){
       ERROR("SDL failed to set the video mode");
       return -1;
   }
-
-  if ( !(ret == TTF_Init()))
+  ret = TTF_Init();
+  if ( ret )
   {
       ERROR("SDL_TTF failed to init");
       return ret;
   }
-
-  if ( NULL == (font = TTF_OpenFont("./Purisa.ttf", FONT_SIZE)))
+  font = TTF_OpenFont("./Purisa.ttf", FONT_SIZE);
+  if ( !font )
   {
     ERROR("Error Loading text");
     return -1;
