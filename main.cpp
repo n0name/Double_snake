@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
           run();
           break;
         case AI:
-          ///to do: add AI to second worm...
+          /// @todo add AI to second snake...
           break;
         }
         
@@ -126,7 +126,7 @@ void run()
 {
     bool haveFood = false;
     SDL_Event event;
-    SDL_Surface *screen, *head, *food, *bckg, *tmp;
+    SDL_Surface *screen, *head, *food, *bckg, *tmp, *background;
     SDL_Rect bckgRect, foodRect;
 
     int Xstep = STEP;
@@ -157,6 +157,11 @@ void run()
     /// load food
     tmp = IMG_Load("./rana.gif");
     food = SDL_DisplayFormat( tmp );
+    SDL_FreeSurface( tmp );
+
+    /// Load Background
+    tmp = IMG_Load( "background.png");
+    background = SDL_DisplayFormat( tmp );
     SDL_FreeSurface( tmp );
     
     KeyboardHandler keyHandler;
@@ -259,6 +264,7 @@ void run()
 
         /// redraw playground
         SDL_FillRect( screen, NULL, 0);
+        SDL_BlitSurface( background , NULL, screen, &bckgRect );
 
         /// draw snake
         for(int i = 0; i < len; i++)
